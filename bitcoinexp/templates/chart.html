@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/indicators/indicators.js"></script>
+	<script src="https://code.highcharts.com/stock/indicators/bollinger-bands.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
+
+</head>
+<body>
+<div id="container" style="height: 600px; min-width: 310px"></div>
+		<script type='text/javascript'>
+			$(document).ready(function(){
+				var sock = io.connect('http://' + document.domain + ':' + location.port);
+				console.log('ready...')
+				sock.on( 'connect' , function(){
+					console.log('connected!')
+				});
+				
+					var chartfs = new Highcharts.stockChart('container',{
+						chart:{
+							type: 'candlestick',
+							events:{
+								load: function(){
+									
+								}
+							}
+						},
+						title: {
+							text: 'BTC/KRW'
+						},
+						subtitle: {
+							text: 'Bitcoin chart per 1 min'
+						},
+						rangeSelector: {
+							buttons: [
+								{type: 'hour',count: 1,text: '1h'}, 
+								{type: 'day',count: 1,text: '1d'}, 
+								{type: 'all',count: 1,text: 'All'}
+							],
+							selected: 2,
+							inputEnabled: true
+						},
+						xAxis: {
+							ordinal: false,
+							units : [
+										[
+											'minute',
+											[30]
+										],
+										[
+    										'hour',
+   											[1, 2, 3, 4, 6, 8, 12]
+										], 
+										[
+											'day',
+											[1]
+										], 
+										[
+											'week',
+											[1]
+										], 
+										[
+											'month',
+											[1, 3, 6]
+										],
+									],
+							minTickInterval : 30 * 60 * 1000
+						},
+						plotOptions: {
+							candlestick: {
+								downColor: 'blue',
+								upColor: 'red'
+							},
+							bb: {
+								bottomLine: {
+									styles: {
+										lineColor: 'red'
+									}
+								},
+								topLine: {
+									styles: {
+										lineColor: 'blue'
+									}
+								}
+							}
+						},
+						time: {
+							timezoneOffset : -9 * 60
+						},
+						series: [
+							{
+								name: 'BTC/KRW',
+								type: 'candlestick',
+								data: [],
+								id: 'BTC',
+								dataGrouping: {
+									forced : true,
+									units : [
+										[
+											'minute',
+											[30]
+										],
+										[
+    										'hour',
+   											[1, 2, 3, 4, 6, 8, 12]
+										], 
+										[
+											'day',
+											[1]
+										], 
+										[
+											'week',
+											[1]
+										], 
+										[
+											'month',
+											[1, 3, 6]
+										],
+									]								
+								}
+							},
+							{
+								name: 'MA20',
+								type: 'sma',
+								linkedTo: 'BTC',
+								params: {
+									index: 3,
+									period: 20
+								},
+								marker: {
+        							enabled: false
+     							},
+								pointIntervalUnit: [
+										[
+											'minute',
+											[30]
+										],
+										[
+    										'hour',
+   											[1, 2, 3, 4, 6, 8, 12]
+										], 
+										[
+											'day',
+											[1]
+										], 
+										[
+											'week',
+											[1]
+										], 
+										[
+											'month',
+											[1, 3, 6]
+										],
+									]	
+							},
+							{
+								name: 'Bollinger Band',
+								type: 'bb',
+								linkedTo: 'BTC',
+								pointIntervalUnit : [
+										[
+											'minute',
+											[30]
+										],
+										[
+    										'hour',
+   											[1, 2, 3, 4, 6, 8, 12]
+										], 
+										[
+											'day',
+											[1]
+										], 
+										[
+											'week',
+											[1]
+										], 
+										[
+											'month',
+											[1, 3, 6]
+										],
+									]	
+							}
+						]
+					});
+					
+					sock.on('ohlcv',function(dt){
+						var jsondt = JSON.parse(dt)
+						chartfs.series[0].addPoint([
+							Number(jsondt.date) * 1000,
+							+jsondt.open, 
+							+jsondt.high, 
+							+jsondt.low, 
+							+jsondt.close
+            			])
+						console.log(new Date(+jsondt.date * 1000))
+					})
+					// var chartdata = [];
+					// $.each({{chart|safe}}, function(i, item){
+					// 	chartdata.push([item.date, item.open, item.high, item.low, item.close]);
+					// 	});
+					// chartfs.series[0].setData(chartdata);
+				
+			});
+
+		</script>
+</body>
+</html>
+
+	<body>
+
+	</body>
