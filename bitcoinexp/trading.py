@@ -2,6 +2,7 @@ import json
 import datetime
 import pybithumb
 from pybithumb import WebSocketManager
+import pandas as pd
 
 
 def run(socketio):
@@ -35,7 +36,7 @@ def get_position(ticker):  # if position should be located in bid, return minus 
 
 def get_chart_data(ticker):
     data = pybithumb.get_candlestick(ticker, chart_intervals="30m")
-    data['date'] = data.index  # put index(date) in data
+    data['date'] = data.index - pd.Timedelta('9 hours')   # put index(date) in data, KST timestamp to UTC timestamp
     return data
 
 
