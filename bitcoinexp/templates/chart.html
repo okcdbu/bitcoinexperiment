@@ -101,7 +101,8 @@
 								dataGrouping: {
 									forced : true,
 									units : unit								
-								}
+								},
+								pointIntervalUnit: unit
 							},
 							{
 								name: 'MA20',
@@ -121,6 +122,7 @@
 									}
 								},
 								
+								
 							{
 								name: 'Bollinger Band',
 								type: 'bb',
@@ -137,19 +139,34 @@
 					
 					sock.on('ohlcv',function(dt){
 						var jsondt = JSON.parse(dt)
-						chartfs.series[0].addPoint([
+						var last = chartfs.series[0].xData[chartfs.series[0].xData.length - 2]
+						var dataarr = chartfs.series[0]
+						if(Number(jsondt.date) * 1000 < last + 1000 * 60 * 60){
+							console.log(new Date(Number(jsondt.date) * 1000),new Date(last + 1000 * 60 * 60))
+							chartfs.series[0].removePoint(dataarr.options.data.length - 1)
+							chartfs.series[0].addPoint([
 							Number(jsondt.date) * 1000,
 							+jsondt.open, 
 							+jsondt.high, 
 							+jsondt.low, 
 							+jsondt.close
             			])
-						console.log(+jsondt.date * 1000)
+						}
+						else{
+							chartfs.series[0].addPoint([
+							Number(jsondt.date) * 1000,
+							+jsondt.open, 
+							+jsondt.high, 
+							+jsondt.low, 
+							+jsondt.close
+            			])
+						}
+						
 					})
 					var chartdata = [];
 					$.each({{chart|safe}}, function(i, item){
 						chartdata.push([item.date, item.open, item.high, item.low, item.close]);
-						console.log(item.date)
+						//console.log(item.date)
 						});
 					chartfs.series[0].setData(chartdata);
 				
