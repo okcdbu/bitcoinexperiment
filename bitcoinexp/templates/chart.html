@@ -46,11 +46,6 @@
 					var chartfs = new Highcharts.stockChart('container',{
 						chart:{
 							type: 'candlestick',
-							events:{
-								load: function(){
-									
-								}
-							}
 						},
 						title: {
 							text: 'BTC/KRW'
@@ -138,14 +133,15 @@
 					});
 					
 					sock.on('ohlcv',function(dt){
-						var jsondt = JSON.parse(dt)
+						var jsondt = JSON.parse(dt)[0]
 						var last = chartfs.series[0].xData[chartfs.series[0].xData.length - 2]
 						var dataarr = chartfs.series[0]
-						if(Number(jsondt.date) * 1000 < last + 1000 * 60 * 60){
-							console.log(new Date(Number(jsondt.date) * 1000),new Date(last + 1000 * 60 * 60))
+						console.log(new Date(jsondt.date),new Date(last))
+						if(jsondt.date < last + 60 * 60 * 30){
+							console.log(new Date(jsondt.date),new Date(last + 1000 * 30 * 60))
 							chartfs.series[0].removePoint(dataarr.options.data.length - 1)
 							chartfs.series[0].addPoint([
-							Number(jsondt.date) * 1000,
+							jsondt.date,
 							+jsondt.open, 
 							+jsondt.high, 
 							+jsondt.low, 
@@ -154,8 +150,8 @@
 						}
 						else{
 							chartfs.series[0].addPoint([
-							Number(jsondt.date) * 1000,
-							+jsondt.open, 
+							jsondt.date,
+							+jsondt.open,
 							+jsondt.high, 
 							+jsondt.low, 
 							+jsondt.close
