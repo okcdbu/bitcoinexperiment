@@ -18,8 +18,15 @@
 			$(document).ready(function(){
 				var sock = io.connect('http://' + document.domain + ':' + location.port);
 				console.log('ready...')
-				sock.on( 'connect' , function(){
+				sock.on( 'response' , function(dt){
 					console.log('connected!')
+					console.log(JSON.parse(dt))
+					var chartdata = [];
+					$.each(JSON.parse(dt), function(i, item){
+						chartdata.push([item.date, item.open, item.high, item.low, item.close]);
+						//console.log(item.date)
+						});
+					chartfs.series[0].setData(chartdata);
 				});
 					var unit = [
 										[
@@ -133,12 +140,11 @@
 					});
 					
 					sock.on('ohlcv',function(dt){
-						var jsondt = JSON.parse(dt)[0]
-						var last = chartfs.series[0].xData[chartfs.series[0].xData.length - 2]
+						var jsondt = JSON.parse(dt)
+						var last = chartfs.series[0].xData[chartfs.series[0].xData.length - 1]
 						var dataarr = chartfs.series[0]
-						console.log(new Date(jsondt.date),new Date(last))
-						if(jsondt.date < last + 60 * 60 * 30){
-							console.log(new Date(jsondt.date),new Date(last + 1000 * 30 * 60))
+						//console.log('last data:'+new Date(last),dataarr.options.data.length)
+						if(jsondt.date < last + 1000 * 60 * 30){
 							chartfs.series[0].removePoint(dataarr.options.data.length - 1)
 							chartfs.series[0].addPoint([
 							jsondt.date,
@@ -159,12 +165,7 @@
 						}
 						
 					})
-					var chartdata = [];
-					$.each({{chart|safe}}, function(i, item){
-						chartdata.push([item.date, item.open, item.high, item.low, item.close]);
-						//console.log(item.date)
-						});
-					chartfs.series[0].setData(chartdata);
+					
 				
 			});
 

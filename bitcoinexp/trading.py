@@ -4,7 +4,6 @@ from pybithumb import *
 import pandas as pd
 import numpy as np
 
-
 candle_data = pd.DataFrame([])
 
 
@@ -14,9 +13,9 @@ def run(socketio):
         data = wm.get()
         debug = get_ohlcv_data(data)
         global candle_data
-        candle_data.append(debug, ignore_index=True)
+        candle_data = candle_data.append(debug, ignore_index=True)
         dummy = bollinger_trader(candle_data)
-        jsondt = dummy.iloc[-1:].to_json(orient='records')
+        jsondt = dummy.iloc[-1, :].to_json(orient='index')
         socketio.emit('ohlcv', jsondt)
 
 
@@ -26,7 +25,7 @@ def get_chart_data(ticker):
     data['date'] = data.index - pd.Timedelta('9 hours')  # put index(date) in data, KST timestamp to UTC timestamp
     data = bollinger_trader(data)
     candle_data = data
-    return candle_data
+    return data
 
 
 def bollinger_trader(data):
@@ -51,8 +50,8 @@ def get_ohlcv_data(data):
     unixtime = datetime.datetime.strptime(data['content']['date'] + data['content']['time'],
                                           '%Y%m%d%H%M%S').timestamp()
     unixtime = str(int(unixtime))
-    values = [unixtime, data['content']['openPrice'], data['content']['highPrice'], data['content']['lowPrice'],
-              data['content']['closePrice'], data['content']['volume']]
+    values = [int(unixtime) * 1000, float(data['content']['openPrice']), float(data['content']['highPrice']), float(data['content']['lowPrice']),
+              float(data['content']['closePrice']), float(data['content']['volume'])]
     keys = ['date', 'open', 'high', 'low', 'close', 'volume']
     dt = dict(zip(keys, values))
     return dt
